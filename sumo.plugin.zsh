@@ -116,8 +116,9 @@ function _sumo {
         )
         _describe 'command' subcmds ;;
       search) subcmds=(
-        'bulk-upload-app:Search the bulk-upload-app source name'
-        'whispir-v5:Search the /var/log/jboss6/server.log source name'
+        'last-15m:Search over the last 15 minutes'
+        'last-30m:Search over the last 30 minutes'
+#        'today:Search over the the current day'
         )
         _describe 'command' subcmds ;;
     esac
@@ -272,8 +273,9 @@ Usage: sumo search <command> [options]
 
 Available commands:
 
-  bulk-upload-app
-  whispir-v5
+  last-15   [sourcename] [query]
+  last-30   [sourcename] [query]
+  today     [sourcename] [query]
 
 EOF
     return 1
@@ -287,12 +289,12 @@ EOF
 
 function sumo-search () {
 
-  local SOURCE_NAME=${1:-"bulk-upload-app"}
-
   local SRT_DATE=$( date -v-5M "+%Y-%m-%dT%H:%M:%S" )
   local END_DATE=$( date -v-0M "+%Y-%m-%dT%H:%M:%S" )
+  local SOURCE_NAME=${3:-"sourcename"}
+  local QUERY_STRING=${4:-""}
 
-  local QRY="_sourcename = \\\"${SOURCE_NAME}\\\""
+  local QRY="_sourcename = \\\"${SOURCE_NAME}\\\" ${QUERY_STRING}"
 
   local DATA="{
     \"query\":           \"${QRY}\",
@@ -346,10 +348,20 @@ function sumo-search () {
   echo "${MESSAGES}" | sed -e 's/\\\\"/\\\\\\"/g'
 }
 
-function _sumo::search::bulk-upload-app () {
-  sumo-search "bulk-upload-app"
+function _sumo::search::last-15 () {
+  local SRT_DATE=$( date -v-15M "+%Y-%m-%dT%H:%M:%S" )
+  local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
+  sumo-search ${SRT_DATE} ${END_DATE} "$@"
 }
 
-function _sumo::search::whispir-v5 () {
-  sumo-search "/var/log/jboss6/server.log"
+function _sumo::search::last-30 () {
+  local SRT_DATE=$( date -v-30M "+%Y-%m-%dT%H:%M:%S" )
+  local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
+  sumo-search ${SRT_DATE} ${END_DATE} "$@"
 }
+
+#function _sumo::search::today () {
+#  local SRT_DATE=$( date -v-30M "+%Y-%m-%dT%H:%M:%S" )
+#  local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
+#  sumo-search ${SRT_DATE} ${END_DATE} "$@"
+#}
