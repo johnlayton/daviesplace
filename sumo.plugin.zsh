@@ -273,8 +273,8 @@ Usage: sumo search <command> [options]
 
 Available commands:
 
-  last-15   [sourcename] [query]
-  last-30   [sourcename] [query]
+  last-15m   [sourcename] [query]
+  last-30m   [sourcename] [query]
   today     [sourcename] [query]
 
 EOF
@@ -289,8 +289,8 @@ EOF
 
 function sumo-search () {
 
-  local SRT_DATE=$( date -v-5M "+%Y-%m-%dT%H:%M:%S" )
-  local END_DATE=$( date -v-0M "+%Y-%m-%dT%H:%M:%S" )
+  local SRT_DATE=${1:-$( date -v-5M "+%Y-%m-%dT%H:%M:%S" )}
+  local END_DATE=${1:-$( date -v-5M "+%Y-%m-%dT%H:%M:%S" )}
   local SOURCE_NAME=${3:-"sourcename"}
   local QUERY_STRING=${4:-""}
 
@@ -343,25 +343,17 @@ function sumo-search () {
   local MESSAGES=$( sumo-get "v1/search/jobs/${ID}/messages" "offset=0&limit=${COUNT}" )
   local DELETED=$( sumo-del "v1/search/jobs/${ID}" )
 
-# | jq -r ".messages" | jqx stream | jq -r ".map._raw" | jqx fields logger_name message
-
   echo "${MESSAGES}" | sed -e 's/\\\\"/\\\\\\"/g'
 }
 
-function _sumo::search::last-15 () {
+function _sumo::search::last-15m () {
   local SRT_DATE=$( date -v-15M "+%Y-%m-%dT%H:%M:%S" )
   local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
   sumo-search ${SRT_DATE} ${END_DATE} "$@"
 }
 
-function _sumo::search::last-30 () {
+function _sumo::search::last-30m () {
   local SRT_DATE=$( date -v-30M "+%Y-%m-%dT%H:%M:%S" )
   local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
   sumo-search ${SRT_DATE} ${END_DATE} "$@"
 }
-
-#function _sumo::search::today () {
-#  local SRT_DATE=$( date -v-30M "+%Y-%m-%dT%H:%M:%S" )
-#  local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
-#  sumo-search ${SRT_DATE} ${END_DATE} "$@"
-#}
