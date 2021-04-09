@@ -2,8 +2,6 @@
 # Init
 #####################################################################
 
-export SUMOLOGIC_API_ENDPOINT="https://api.au.sumologic.com/api"
-
 function sumo-del () {
   local PTH=""
 
@@ -127,13 +125,6 @@ Available commands:
   search
 
 EOF
-}
-
-function _sumo::init {
-  echo "============================================="
-  echo "Create a new access id and key pair and export\n  SUMOLOGIC_ACCESSID=<access_id>\n  SUMOLOGIC_ACCESSKEY=<access_key>"
-  echo "============================================="
-  open "https://service.au.sumologic.com/ui/#/preferences"
 }
 
 #####################################################################
@@ -342,4 +333,25 @@ function _sumo::search::last-30m () {
   local SRT_DATE=$( date -v-30M "+%Y-%m-%dT%H:%M:%S" )
   local END_DATE=$( date "+%Y-%m-%dT%H:%M:%S" )
   sumo-search ${SRT_DATE} ${END_DATE} "$@"
+}
+
+function _sumo::init {
+  if [ -n "${SUMOLOGIC_ACCESSID}" ] && [ -n "${SUMOLOGIC_ACCESSKEY}" ]; then
+    echo "============================================="
+    echo "Current Configuration"
+    echo "SUMOLOGIC_API_ENDPOINT  ....... ${SUMOLOGIC_API_ENDPOINT}"
+    echo "SUMOLOGIC_ENVIRONMENT ......... ${SUMOLOGIC_ENVIRONMENT}"
+    echo "SUMOLOGIC_ACCESSID ............ ${SUMOLOGIC_ACCESSID}"
+    echo "SUMOLOGIC_ACCESSKEY ........... ${SUMOLOGIC_ACCESSKEY}"
+    echo "============================================="
+  else
+    echo "============================================="
+    echo "Create Configuration"
+    echo "SUMOLOGIC_API_ENDPOINT=<http://...>"
+    echo "SUMOLOGIC_ENVIRONMENT=<au>"
+    echo "SUMOLOGIC_ACCESSID=<access_id>"
+    echo "SUMOLOGIC_ACCESSKEY=<access_key>"
+    echo "============================================="
+    open "https://service.au.sumologic.com/ui/#/preferences"
+  fi
 }
